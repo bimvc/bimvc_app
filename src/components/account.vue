@@ -1,5 +1,4 @@
 <template>
-
   <v-app id="inspire">
     <v-navigation-drawer
       fixed
@@ -75,8 +74,15 @@
     >
       <v-toolbar-title style="width: 300px" class="ml-0 pl-3">
         <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-        <span class="hidden-sm-and-down">BIM.VC</span>
+        <span class="hidden-sm-and-down">Google Contacts</span>
       </v-toolbar-title>
+      <v-text-field
+        flat
+        solo-inverted
+        prepend-icon="search"
+        label="Search"
+        class="hidden-sm-and-down"
+      ></v-text-field>
       <v-spacer></v-spacer>
       <v-btn icon>
         <v-icon>apps</v-icon>
