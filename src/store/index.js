@@ -7,10 +7,18 @@ import FIREBASE_CONFIG from '../api/firebase.config';
 const firebaseApi = firebase.initializeApp(FIREBASE_CONFIG);
 const firebaseDb = firebase.firestore();
 
+firebaseApi.auth().onAuthStateChanged(user => {
+    if (user) {
+        const { uid } = user;
+        store.commit('setUserInfo', { uid });
+    }
+});
+
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
     state: {
+        uid: null,
         signInProcess: false,
         isAuth: false,
         emailVerified: false,
@@ -22,9 +30,15 @@ const store = new Vuex.Store({
         company: null,
         displayName: null,
         tests: [],
-        testsPassing: []
+        testPassing: []
     },
     mutations: {
+        setUserInfo (state, info) {
+            state.uid = info.uid;
+        },
+        setTestsPassing (state, data) {
+            state.testPassing = data;
+        },
         signInStart (state) {
             state.signInProcess = true;
         },
@@ -59,15 +73,21 @@ const store = new Vuex.Store({
                 console.log(e);
             }
         },
-        async loadTestInfo ({ tests, testsPassing }) {
-            const query = await firebaseDb.collection("tests").get();
+        async loadTestInfo ({ state, commit }) {
+            const { uid, testPassing } = state;
+            if (!uid) {
+                return;
+            }
+
+            let tests = [];
+            const query = await firebaseDb.collection('tests').get();
             query.forEach(doc => tests.push(doc.data()));
 
-            const user = await firebaseDb.collection("users").doc(this.uid).get();
+            const user = await firebaseDb.collection('users').doc(uid).get();
             if (user.exists) {
                 const data = user.data();
                 if (data.hasOwnProperty('testPassing')) {
-                    testsPassing = user.data().testPassing;
+                    commit('setTestsPassing', user.data().testPassing);
                 }
             }
 
@@ -88,7 +108,6 @@ const store = new Vuex.Store({
 
                 console.log(t);
             });
-
         }
     }
 });

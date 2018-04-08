@@ -137,8 +137,8 @@
                 'tests'
             ])
         },
-        methods: {
-
+        created() {
+            this.$store.dispatch('loadTestInfo')
         }
     };
 </script>
