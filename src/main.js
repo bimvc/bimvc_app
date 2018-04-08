@@ -8,6 +8,8 @@ import store from './store/index';
 
 import Auth from './components/auth.vue';
 import Account from './components/account.vue';
+import Edit from './components/account/edit';
+import Testing from './components/account/testing';
 
 Vue.config.productionTip = false;
 Vue.use(VueRouter);
@@ -17,7 +19,20 @@ const router = new VueRouter({
     mode: 'history',
     routes: [
         { path: '/auth', component: Auth },
-        { path: '/account', component: Account },
+        {
+            path: '/account',
+            component: Account,
+            children: [
+                {
+                    path: 'testing',
+                    component: Testing
+                },
+                {
+                    path: 'edit',
+                    component: Edit
+                }
+            ]
+        },
         { path: '/*', component: Account },
     ]
 });
