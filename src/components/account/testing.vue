@@ -1,42 +1,60 @@
 <template>
     <v-app>
-        <v-card-title>
-            <h2>Тестирование</h2>
-            <v-spacer></v-spacer>
-        </v-card-title>
-        <v-data-table
-            :headers="headers"
-            :items="items"
-            hide-actions
-            class="elevation-1">
-            <template slot="items" slot-scope="props">
-                <td>{{ props.item.name }}</td>
-                <td class="text-xs-right">{{ props.item.calories }}</td>
-                <td class="text-xs-right">{{ props.item.fat }}</td>
-                <td class="text-xs-right">{{ props.item.carbs }}</td>
-                <td class="text-xs-right">{{ props.item.protein }}</td>
-                <td class="text-xs-right">{{ props.item.iron }}</td>
-            </template>
-        </v-data-table>
+        <v-subheader>{{ tests.name }}</v-subheader>
+        <v-card>
+            <v-data-table
+                :headers="headers"
+                :items="tests.blocks"
+                hide-actions
+                class="elevation-1">
+                <template slot="items" slot-scope="props">
+                    <td>{{ props.item.name }}</td>
+                    <td class="text-xs-right">{{ props.item.result }}</td>
+                    <td class="text-xs-right">{{ props.item.rules.successPrecent}}</td>
+                </template>
+            </v-data-table>
+        </v-card>
+        <v-layout>
+            <v-flex xs12 sm12 offset6 text-xs-right>
+                <v-btn @click.stop="dialog = true" small>Сертификат</v-btn>
+            </v-flex>
+        </v-layout>
+        <v-dialog v-model="dialog" max-width="290">
+            <v-card>
+                <v-card-title class="headline">Use Google's location service?</v-card-title>
+                <v-card-text>Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.</v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="green darken-1" flat="flat" @click.native="dialog = false">Disagree</v-btn>
+                    <v-btn color="green darken-1" flat="flat" @click.native="dialog = false">Agree</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-app>
 </template>
 <script>
     import { mapState } from 'vuex';
     export default {
+        computed: {
+            ...mapState([
+                'tests'
+            ])
+        },
+        created() {
+            this.$store.dispatch('loadTestInfo')
+        },
         data () {
             return {
+                dialog: false,
                 headers: [
                     {
-                        text: 'Dessert (100g serving)',
+                        text: 'Название блока',
                         align: 'left',
                         sortable: false,
                         value: 'name'
                     },
-                    { text: 'Calories', value: 'calories' },
-                    { text: 'Fat (g)', value: 'fat' },
-                    { text: 'Carbs (g)', value: 'carbs' },
-                    { text: 'Protein (g)', value: 'protein' },
-                    { text: 'Iron (%)', value: 'iron' }
+                    { text: 'Процент выполнения', value: 'result' },
+                    { text: 'Процент прохождения', value: 'rules.successPrecent' }
                 ],
                 items: [
                     {
@@ -131,14 +149,6 @@
                     }
                 ]
             }
-        },
-        computed: {
-            ...mapState([
-                'tests'
-            ])
-        },
-        created() {
-            this.$store.dispatch('loadTestInfo')
         }
     };
 </script>

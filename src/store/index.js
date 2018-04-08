@@ -39,6 +39,9 @@ const store = new Vuex.Store({
         setTestsPassing (state, data) {
             state.testPassing = data;
         },
+        setTests (state, data){
+            state.tests = data;
+        },
         signInStart (state) {
             state.signInProcess = true;
         },
@@ -59,7 +62,7 @@ const store = new Vuex.Store({
                 commit('auth');
             }
         },
-        async registration ({ email, password, name, surname, commit }) {
+        async registration ({ email, password, name, surname }) {
             try{
                 await firebaseApi.auth()
                     .createUserWithEmailAndPassword(email, password);
@@ -74,40 +77,38 @@ const store = new Vuex.Store({
             }
         },
         async loadTestInfo ({ state, commit }) {
-            const { uid, testPassing } = state;
+            const { uid } = state;
             if (!uid) {
                 return;
             }
-
             let tests = [];
             const query = await firebaseDb.collection('tests').get();
             query.forEach(doc => tests.push(doc.data()));
 
             const user = await firebaseDb.collection('users').doc(uid).get();
+            let testPassing = null;
             if (user.exists) {
                 const data = user.data();
                 if (data.hasOwnProperty('testPassing')) {
-                    commit('setTestsPassing', user.data().testPassing);
+                    testPassing = data.testPassing;
                 }
             }
 
-            tests.forEach((t, index) => {
-                t.blocks.forEach((b, index) => {
+            tests.forEach((t) => {
+                t.blocks.forEach((b) => {
                     b.result = testPassing
                         .filter(p => p.testid === +b.id)
                         .sort((p1, p2) => p1.sessionid < p2.sessionid);
 
-                    if (b.result[0] && b.result[0].hasOwnProperty('result_num')) {
-                        b.result = +b.result.toFixed(2);
-                    }
+                    b.result = b.result[0].ResultStr;
                 });
 
                 t.blockResult = 0;
                 t.blocks.forEach(b => t.blockResult += b.result);
                 t.blockResult = t.blockResult % t.blocks.length;
-
-                console.log(t);
             });
+
+            commit('setTests', tests[0]);
         }
     }
 });
