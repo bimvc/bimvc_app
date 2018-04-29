@@ -3,6 +3,9 @@ import Vuex from 'vuex';
 import firebase from 'firebase';
 import firestore from 'firebase/firestore'
 import FIREBASE_CONFIG from '../api/firebase.config';
+import xdLocalStorage from 'xdlocalstorage';
+
+window.xdLocalStorage.init({ iframeUrl: 'https://bim.vc/ls/index.html' });
 
 const firebaseApi = firebase.initializeApp(FIREBASE_CONFIG);
 const firebaseDb = firebase.firestore();
@@ -29,6 +32,8 @@ const store = new Vuex.Store({
         city: null,
         company: null,
         displayName: null,
+        registrationProcess: false,
+        awaitEmailConfirm: false,
         tests: [],
         testPassing: []
     },
@@ -45,8 +50,20 @@ const store = new Vuex.Store({
         signInStart (state) {
             state.signInProcess = true;
         },
+        signInStop (state) {
+            state.signInProcess = false;
+        },
+        registrationStart (state) {
+            state.registrationProcess = true;
+        },
+        registrationStop (state) {
+            state.registrationProcess = true;
+        },
         auth (state) {
             state.isAuth = true;
+        },
+        setAwaitEmailConfirm (state) {
+            state.awaitEmailConfirm = true;
         }
     },
     actions: {
@@ -56,25 +73,41 @@ const store = new Vuex.Store({
             }
             
             commit('signInStart');
-
-            const signIn = await firebaseApi.auth().signInWithEmailAndPassword(email, password);
-            if (signIn){
-                commit('auth');
+            try{
+                const signIn = await firebaseApi.auth().signInWithEmailAndPassword(email, password);
+                if (signIn){
+                    window.xdLocalStorage.setItem('user', email);
+                    window.xdLocalStorage.setItem('pwd', password);
+                    return commit('auth');
+                }
+            } catch (e) {
+                commit('signInStop');
+                alert('Не верный пароль или email. Для восстановления нажмите "Забыли пароль?"');
             }
         },
-        async registration ({ email, password, name, surname }) {
-            try{
-                await firebaseApi.auth()
-                    .createUserWithEmailAndPassword(email, password);
-                await firebaseApi.auth().currentUser
-                    .sendEmailVerification();
-                await firebaseApi.auth().currentUser
-                    .updateProfile({ displayName: name + ' ' + surname});
-                const user = firebaseApi.auth().currentUser;
-                await firebaseDb.collection('users').doc(user.uid);
-            } catch(e) {
-                console.log(e);
+        async registration ({ commit }, { email, password, name, surname }) {
+            if (email && password && name && surname) {
+                commit('registrationStart');
+                try{
+                    await firebaseApi.auth()
+                        .createUserWithEmailAndPassword(email, password);
+                    await firebaseApi.auth().currentUser
+                        .sendEmailVerification();
+                    await firebaseApi.auth().currentUser
+                        .updateProfile({ displayName: `${name} ${surname}`});
+                    const user = firebaseApi.auth().currentUser;
+                    await firebaseDb.collection('users').doc(user.uid);
+
+                    commit('setAwaitEmailConfirm');
+                } catch(e) {
+                    commit('registrationStop');
+                    alert('Ошибка. Попробуйте еще раз.');
+                }
             }
+        },
+        async passwordRecovery({ commit }, { email }) {
+            await firebaseApi.auth().sendPasswordResetEmail(email)
+
         },
         async loadTestInfo ({ state, commit }) {
             const { uid } = state;

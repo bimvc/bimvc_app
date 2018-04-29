@@ -7,6 +7,7 @@ import 'vuetify/dist/vuetify.min.css';
 import store from './store/index';
 
 import Auth from './components/auth.vue';
+import Registration from './components/registration';
 import Account from './components/account.vue';
 import Edit from './components/account/edit';
 import Testing from './components/account/testing';
@@ -19,6 +20,7 @@ const router = new VueRouter({
     mode: 'history',
     routes: [
         { path: '/auth', component: Auth },
+        { path: '/registration', component: Registration },
         {
             path: '/account',
             component: Account,
