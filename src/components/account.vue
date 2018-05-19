@@ -1,9 +1,10 @@
 <template>
   <v-app>
     <v-navigation-drawer
-            fixed
-            :clipped="$vuetify.breakpoint.lgAndUp"
+            
             app
+            mobile-break-point="600"
+            
             v-model="drawer"
     >
       <v-list dense>
@@ -101,13 +102,15 @@
             dialog: false,
             drawer: true,
             items: [
-                { icon: 'account_box', text: 'Личные данные' },
-                { icon: 'check_box', text: 'Тестирование', path: 'testing'},
-                { icon: 'settings', text: 'Настройки'},
-                { icon: 'content_copy', text: 'План обучения' },
-                { icon: 'content_copy', text: 'Видео курсы' },
-                { icon: 'content_copy', text: 'Баллы' },
-                { icon: 'content_copy', text: 'Вакансии' },
+                { icon: 'content_copy', text: 'Курсы', path: 'courses'},
+                { icon: 'check_box', text: 'Тестирования', path: 'testing'},
+                { icon: 'settings', text: 'Настройки', path: 'edit'},
+
+                // { icon: 'settings', text: 'Настройки'},
+                // { icon: 'content_copy', text: 'План обучения' },
+                // { icon: 'content_copy', text: 'Видео курсы' },
+                // { icon: 'content_copy', text: 'Баллы' },
+                // { icon: 'content_copy', text: 'Вакансии' },
                 //
                 //   { icon: 'contacts', text: 'Contacts' },
                 // { icon: 'history', text: 'Frequently contacted' },

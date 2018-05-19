@@ -9,37 +9,60 @@ window.xdLocalStorage.init({ iframeUrl: 'https://bim.vc/ls/index.html' });
 
 const firebaseApi = firebase.initializeApp(FIREBASE_CONFIG);
 const firebaseDb = firebase.firestore();
+firebaseDb.settings({ timestampsInSnapshots: true });
 
-firebaseApi.auth().onAuthStateChanged(user => {
-    if (user) {
-        const { uid } = user;
-        store.commit('setUserInfo', { uid });
-    }
-});
+firebaseApi
+    .auth()
+    .onAuthStateChanged(async user => {
+        if (user) {
+            const { uid, email } = user;
+            const doc = await firebaseDb.collection('users').doc(uid).get();
+
+            store.commit('updateUserInfo', { uid, email, ...doc.data() });
+            store.commit('updateUserInfoInProgress');
+        }
+    });
 
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
     state: {
         uid: null,
-        signInProcess: false,
+
         isAuth: false,
-        emailVerified: false,
-        email: null,
+        signInProcess: false,
         password: null,
+
+        email: null,    
+        emailVerified: false,
+        
         name: null,
         surname: null,
         city: null,
         company: null,
+        status: null,
+        updateUserInfoInProgress: true,
+        loadedUserInfo: null,
+
         displayName: null,
         registrationProcess: false,
         awaitEmailConfirm: false,
+
         tests: [],
-        testPassing: []
+        testPassing: [],
     },
     mutations: {
-        setUserInfo (state, info) {
-            state.uid = info.uid;
+        updateUserInfo (state, info) {
+            state.uid = info.uid || state.uid;
+            state.email = info.email || state.email;
+            state.name = info.name || state.name;
+            state.surname = info.surname || state.surname;
+            state.city = info.city || state.city;
+            state.status = info.status || state.status;
+            state.company = info.company || state.company;
+        },
+        updateUserInfoInProgress (state) {
+            state.updateUserInfoInProgress = !state.updateUserInfoInProgress;
         },
         setTestsPassing (state, data) {
             state.testPassing = data;
@@ -107,7 +130,6 @@ const store = new Vuex.Store({
         },
         async passwordRecovery({ commit }, { email }) {
             await firebaseApi.auth().sendPasswordResetEmail(email)
-
         },
         async loadTestInfo ({ state, commit }) {
             const { uid } = state;
@@ -142,6 +164,22 @@ const store = new Vuex.Store({
             });
 
             commit('setTests', tests[0]);
+        },
+        async updateUserInfo ({ state, commit }, { name, surname, city, company, status }) {
+            const data = {
+                name,
+                surname,
+                city,
+                company,
+                status
+            };
+
+            await firebaseDb
+                .collection('users')
+                .doc(state.uid)
+                .set(data, { merge: true })
+                .then(() => commit('updateUserInfo', data))
+                .catch(e => console.log(e));
         }
     }
 });
