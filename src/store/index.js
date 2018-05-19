@@ -159,14 +159,11 @@ const store = new Vuex.Store({
                 .then(() => commit('updateUserInfo', data))
                 .catch(e => console.log(e));
         },
-        async generateCerificate ({ state, commit }, { courseName, date, result }) {
+        async generateCerificate ({ state, commit }, data) {
+            const { courseName, date, result } = data;
             const { name, surname } = state;
-            const API_URL = 'https://us-central1-bimvc-3cac4.cloudfunctions.net/';
-
-            const certUrl = `${API_URL}/pdf?displayName=${name} ${surname}&
-                    courseName=${courseName}&
-                    date=${date}&
-                    result=${result}`;
+            const API_URL = 'https://us-central1-bimvc-3cac4.cloudfunctions.net';
+            const certUrl = `${API_URL}/pdf?displayName=${name} ${surname}&courseName=${courseName}&date=${date}&result=${result}`;
 
             window.open(certUrl, 'Сертификат', 'width=600,height=400,menubar=no');
         }
