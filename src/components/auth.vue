@@ -1,6 +1,11 @@
 <template>
     <v-app id="inspire">
-        <v-content>
+        <v-progress-linear 
+          v-if="isAuth" 
+          :indeterminate="true" 
+          style="height: 5px; margin: 0;">
+        </v-progress-linear>
+        <v-content v-if="!isAuth">
             <v-container fluid fill-height>
                 <v-layout align-center justify-center>
                     <v-flex xs12 sm8 md4>
@@ -116,6 +121,11 @@
             },
             registration() {
                 this.$router.push('registration');
+            }
+        },
+        watch: {
+            isAuth(v) {
+                return window.location.href = 'http://bim.vc/base';
             }
         }
     }

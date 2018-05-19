@@ -1,48 +1,62 @@
 <template>
-    <v-app>
-        <v-subheader>{{ tests.name }}</v-subheader>
-        <v-card>
-            <v-data-table
-                :headers="headers"
-                :items="tests.blocks"
-                hide-actions
-                class="elevation-1">
-                <template slot="items" slot-scope="props">
-                    <td>{{ props.item.name }}</td>
-                    <td class="text-xs-right">{{ props.item.result }}</td>
-                    <td class="text-xs-right">{{ props.item.rules.successPrecent}}</td>
-                </template>
-            </v-data-table>
-        </v-card>
+    <v-container>
         <v-layout>
-            <v-flex xs12 sm12 offset6 text-xs-right>
-                <v-btn @click.stop="dialog = true" small>Сертификат</v-btn>
+            <v-flex md12 sm12 xs12>
+                <h1 class="title mb-3">Пройденные тестирования:</h1>
+
+                <div 
+                    v-if="!testsResult.length" 
+                    style="
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center; 
+                        height: 300px; 
+                        width: 100%;">
+                    <v-progress-circular 
+                        indeterminate 
+                        color="primary"
+                        center="true"> 
+                    </v-progress-circular>  
+                </div>
+
+                <div 
+                    v-if="testsResult.length" 
+                    v-for="test in testsResult">
+                    <h1 class="subheading mb-3">{{ test.name }}</h1>
+                    <v-data-table
+                        :headers="headers"
+                        :items="test.blocks"
+                        hide-actions
+                        class="elevation-1">
+                        <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
+                        <template slot="items" slot-scope="props">
+                            <td>{{ props.item.name }}</td>
+                            <td class="text-md-center">{{ props.item.result }} %</td>
+                            <td class="text-md-center">{{ props.item.rules.successPrecent}} %</td>
+                            <td class="text-md-center">
+                                <v-icon color="orange" medium v-if="props.item.result > props.item.rules.successPrecent">done</v-icon>
+                            </td>
+                        </template>
+                       <template slot="footer">
+                          <td colspan="100%" style="text-align: right;">
+                            <v-btn color="info" v-on:click="loadCertificate(test.name)">Сертификат</v-btn>
+                          </td>
+                        </template>
+                    </v-data-table>
+                </div>
+
             </v-flex>
         </v-layout>
         <v-dialog v-model="dialog" max-width="290">
             <v-card>
-                <v-card-title class="headline">Use Google's location service?</v-card-title>
-                <v-card-text>Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.</v-card-text>
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="green darken-1" flat="flat" @click.native="dialog = false">Disagree</v-btn>
-                    <v-btn color="green darken-1" flat="flat" @click.native="dialog = false">Agree</v-btn>
-                </v-card-actions>
+
             </v-card>
         </v-dialog>
-    </v-app>
+    </v-container>
 </template>
 <script>
     import { mapState } from 'vuex';
     export default {
-        computed: {
-            ...mapState([
-                'tests'
-            ])
-        },
-        created() {
-            this.$store.dispatch('loadTestInfo')
-        },
         data () {
             return {
                 dialog: false,
@@ -53,101 +67,48 @@
                         sortable: false,
                         value: 'name'
                     },
-                    { text: 'Процент выполнения', value: 'result' },
-                    { text: 'Процент прохождения', value: 'rules.successPrecent' }
+                    { text: 'Выполнено на', value: 'result', align: 'center' },
+                    { text: 'Процент прохождения', value: 'rules.successPrecent', align: 'center' },
+                    { text: 'Пройдено', align: 'center' }
                 ],
-                items: [
-                    {
-                        value: false,
-                        name: 'Frozen Yogurt',
-                        calories: 159,
-                        fat: 6.0,
-                        carbs: 24,
-                        protein: 4.0,
-                        iron: '1%'
-                    },
-                    {
-                        value: false,
-                        name: 'Ice cream sandwich',
-                        calories: 237,
-                        fat: 9.0,
-                        carbs: 37,
-                        protein: 4.3,
-                        iron: '1%'
-                    },
-                    {
-                        value: false,
-                        name: 'Eclair',
-                        calories: 262,
-                        fat: 16.0,
-                        carbs: 23,
-                        protein: 6.0,
-                        iron: '7%'
-                    },
-                    {
-                        value: false,
-                        name: 'Cupcake',
-                        calories: 305,
-                        fat: 3.7,
-                        carbs: 67,
-                        protein: 4.3,
-                        iron: '8%'
-                    },
-                    {
-                        value: false,
-                        name: 'Gingerbread',
-                        calories: 356,
-                        fat: 16.0,
-                        carbs: 49,
-                        protein: 3.9,
-                        iron: '16%'
-                    },
-                    {
-                        value: false,
-                        name: 'Jelly bean',
-                        calories: 375,
-                        fat: 0.0,
-                        carbs: 94,
-                        protein: 0.0,
-                        iron: '0%'
-                    },
-                    {
-                        value: false,
-                        name: 'Lollipop',
-                        calories: 392,
-                        fat: 0.2,
-                        carbs: 98,
-                        protein: 0,
-                        iron: '2%'
-                    },
-                    {
-                        value: false,
-                        name: 'Honeycomb',
-                        calories: 408,
-                        fat: 3.2,
-                        carbs: 87,
-                        protein: 6.5,
-                        iron: '45%'
-                    },
-                    {
-                        value: false,
-                        name: 'Donut',
-                        calories: 452,
-                        fat: 25.0,
-                        carbs: 51,
-                        protein: 4.9,
-                        iron: '22%'
-                    },
-                    {
-                        value: false,
-                        name: 'KitKat',
-                        calories: 518,
-                        fat: 26.0,
-                        carbs: 65,
-                        protein: 7,
-                        iron: '6%'
-                    }
-                ]
+            }
+        },
+        computed: {
+            ...mapState([
+                'isAuth',
+                'testPassing',
+                'testsList'
+            ]),
+            testsResult() {
+                return this.testsList.map(t => {
+                    t.blocks.map(b => {
+                        b.result = this.testPassing
+                            .filter(p => p.testid === +b.id)
+                            .sort((p1, p2) => p1.sessionid < p2.sessionid);
+                        if (b.result[0] && b.result[0].hasOwnProperty('ResultNum')) {
+                            b.result = Math.ceil(b.result[0].ResultNum);
+                        }else{
+                            b.result = 0;
+                        }
+
+                        return b;
+                    })
+
+                    t.blockResult = 0;
+                    t.blocks.forEach(b => t.blockResult += b.result);
+                    t.blockResult = t.blockResult % t.blocks.length;
+
+                    return t;
+                });
+            }
+        },
+        methods:{
+            loadCertificate(name) {
+                this.$store.dispatch('generateCerificate', { 
+                    courseName: name, 
+                    date: 'test', 
+                    result: 100 
+                });
             }
         }
     };

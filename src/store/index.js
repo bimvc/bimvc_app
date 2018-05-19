@@ -10,16 +10,25 @@ window.xdLocalStorage.init({ iframeUrl: 'https://bim.vc/ls/index.html' });
 const firebaseApi = firebase.initializeApp(FIREBASE_CONFIG);
 const firebaseDb = firebase.firestore();
 firebaseDb.settings({ timestampsInSnapshots: true });
-
 firebaseApi
     .auth()
     .onAuthStateChanged(async user => {
         if (user) {
+            store.commit('auth');
             const { uid, email } = user;
             const doc = await firebaseDb.collection('users').doc(uid).get();
 
             store.commit('updateUserInfo', { uid, email, ...doc.data() });
             store.commit('updateUserInfoInProgress');
+            store.commit('setTestsPassing', doc.data().testPassing);
+
+            let tests = []; 
+            const query = await firebaseDb.collection('tests').get();
+            query.forEach(doc => tests.push(doc.data()));
+
+            store.commit('setTestsList', tests);
+        } else {
+            store.commit('unAuth');
         }
     });
 
@@ -29,7 +38,7 @@ const store = new Vuex.Store({
     state: {
         uid: null,
 
-        isAuth: false,
+        isAuth: null,
         signInProcess: false,
         password: null,
 
@@ -48,7 +57,7 @@ const store = new Vuex.Store({
         registrationProcess: false,
         awaitEmailConfirm: false,
 
-        tests: [],
+        testsList: [],
         testPassing: [],
     },
     mutations: {
@@ -67,8 +76,8 @@ const store = new Vuex.Store({
         setTestsPassing (state, data) {
             state.testPassing = data;
         },
-        setTests (state, data){
-            state.tests = data;
+        setTestsList (state, data){
+            state.testsList = data;
         },
         signInStart (state) {
             state.signInProcess = true;
@@ -84,6 +93,9 @@ const store = new Vuex.Store({
         },
         auth (state) {
             state.isAuth = true;
+        },
+        unAuth (state) {
+            state.isAuth = false;    
         },
         setAwaitEmailConfirm (state) {
             state.awaitEmailConfirm = true;
@@ -131,40 +143,6 @@ const store = new Vuex.Store({
         async passwordRecovery({ commit }, { email }) {
             await firebaseApi.auth().sendPasswordResetEmail(email)
         },
-        async loadTestInfo ({ state, commit }) {
-            const { uid } = state;
-            if (!uid) {
-                return;
-            }
-            let tests = [];
-            const query = await firebaseDb.collection('tests').get();
-            query.forEach(doc => tests.push(doc.data()));
-
-            const user = await firebaseDb.collection('users').doc(uid).get();
-            let testPassing = null;
-            if (user.exists) {
-                const data = user.data();
-                if (data.hasOwnProperty('testPassing')) {
-                    testPassing = data.testPassing;
-                }
-            }
-
-            tests.forEach((t) => {
-                t.blocks.forEach((b) => {
-                    b.result = testPassing
-                        .filter(p => p.testid === +b.id)
-                        .sort((p1, p2) => p1.sessionid < p2.sessionid);
-
-                    b.result = b.result[0].ResultStr;
-                });
-
-                t.blockResult = 0;
-                t.blocks.forEach(b => t.blockResult += b.result);
-                t.blockResult = t.blockResult % t.blocks.length;
-            });
-
-            commit('setTests', tests[0]);
-        },
         async updateUserInfo ({ state, commit }, { name, surname, city, company, status }) {
             const data = {
                 name,
@@ -180,6 +158,17 @@ const store = new Vuex.Store({
                 .set(data, { merge: true })
                 .then(() => commit('updateUserInfo', data))
                 .catch(e => console.log(e));
+        },
+        async generateCerificate ({ state, commit }, { courseName, date, result }) {
+            const { name, surname } = state;
+            const API_URL = 'https://us-central1-bimvc-3cac4.cloudfunctions.net/';
+
+            const certUrl = `${API_URL}/pdf?displayName=${name} ${surname}&
+                    courseName=${courseName}&
+                    date=${date}&
+                    result=${result}`;
+
+            window.open(certUrl, 'Сертификат', 'width=600,height=400,menubar=no');
         }
     }
 });

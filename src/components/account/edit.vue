@@ -1,7 +1,7 @@
 <template>
 	<v-container>
 		<v-layout>
-			<v-flex md6 sm8 xs12 offset-md3 offset-sm2 offset-lg0>
+			<v-flex md8 sm8 xs12>
 			<h2 class="title mb-2">Личные данные:</h2>
 			<div 
 				v-if="updateUserInfoInProgress" 
@@ -32,28 +32,31 @@
 				  v-model="setName"
 				  :rules="nameRules"
 				  label="Имя"
-				  
+				  required
 				></v-text-field>
 				<v-text-field
 				  v-model="setSurname"
 				  :rules="surnameRules"
 				  label="Фамилия"
-				 
+		 			required	
 				></v-text-field>
 				<v-text-field
 				  v-model="setCity"
 				  :rules="cityRules"
 				  label="Город"
+				  required
 				></v-text-field>
 				<v-select
 				  v-model="setStatus"
 				  :items="items"
 				  label="Статус"
+				  required
 				></v-select>
 				<v-text-field
 				  v-model="setCompany"
 				  require
 				  label="Вуз / Место работы"
+				  required
 				></v-text-field>
 				<div class="mt-3">
 					<v-btn
