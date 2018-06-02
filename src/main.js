@@ -11,6 +11,8 @@ import Registration from './components/registration';
 import Account from './components/account.vue';
 import Edit from './components/account/edit';
 import Testing from './components/account/testing';
+import Courses from './components/account/courses';
+import Tests from './components/admin/tests';
 
 Vue.config.productionTip = false;
 Vue.use(VueRouter);
@@ -26,12 +28,20 @@ const router = new VueRouter({
             component: Account,
             children: [
                 {
+                    path: 'courses',
+                    component: Courses
+                },
+                {
                     path: 'testing',
                     component: Testing
                 },
                 {
                     path: 'edit',
                     component: Edit
+                },
+                {
+                    path: 'tests',
+                    component: Tests
                 }
             ]
         },

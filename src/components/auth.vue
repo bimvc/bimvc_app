@@ -106,9 +106,7 @@
                     return;
                 }
                 await this.$store.dispatch('signIn', { email: this.email, password: this.password });
-                if (this.isAuth) {
-                    return window.location.href = 'http://bim.vc/base';
-                }
+                this.$router.push('account');
             },
             async passwordRecovery() {
                 this.passwordRecoveryStart = true;
@@ -121,11 +119,6 @@
             },
             registration() {
                 this.$router.push('registration');
-            }
-        },
-        watch: {
-            isAuth(v) {
-                return window.location.href = 'http://bim.vc/base';
             }
         }
     }

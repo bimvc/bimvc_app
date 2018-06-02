@@ -7,6 +7,8 @@ import xdLocalStorage from 'xdlocalstorage';
 
 window.xdLocalStorage.init({ iframeUrl: 'https://bim.vc/ls/index.html' });
 
+// https://bim.vc/wp-json/wp/v2/pages
+
 const firebaseApi = firebase.initializeApp(FIREBASE_CONFIG);
 const firebaseDb = firebase.firestore();
 firebaseDb.settings({ timestampsInSnapshots: true });
@@ -21,6 +23,10 @@ firebaseApi
             store.commit('updateUserInfo', { uid, email, ...doc.data() });
             store.commit('updateUserInfoInProgress');
             store.commit('setTestsPassing', doc.data().testPassing);
+
+            if (doc.data().hasOwnProperty('rights') && doc.data().rights.includes('admin')) {
+                store.commit('makeAdmin');
+            }
 
             let tests = []; 
             const query = await firebaseDb.collection('tests').get();
@@ -59,6 +65,7 @@ const store = new Vuex.Store({
 
         testsList: [],
         testPassing: [],
+        isAdmin: false
     },
     mutations: {
         updateUserInfo (state, info) {
@@ -99,6 +106,9 @@ const store = new Vuex.Store({
         },
         setAwaitEmailConfirm (state) {
             state.awaitEmailConfirm = true;
+        },
+        makeAdmin (state) {
+            state.isAdmin = true;    
         }
     },
     actions: {
@@ -166,6 +176,13 @@ const store = new Vuex.Store({
             const certUrl = `${API_URL}/pdf?displayName=${name} ${surname}&courseName=${courseName}&date=${date}&result=${result}`;
 
             window.open(certUrl, 'Сертификат', 'width=600,height=400,menubar=no');
+        },
+        async addNewLetsTest ({ state, commit }, data) {
+            await firebaseDb
+                .collection('tests')
+                .doc()
+                .set(data)
+                .catch(e => console.log(e));
         }
     }
 });

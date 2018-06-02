@@ -2,7 +2,7 @@
 	<v-container>
 		<v-layout>
 			<v-flex md8 sm8 xs12>
-			<h2 class="title mb-2">Личные данные:</h2>
+			<h2 class="headline mb-2">Настройки:</h2>
 			<div 
 				v-if="updateUserInfoInProgress" 
 				style="
