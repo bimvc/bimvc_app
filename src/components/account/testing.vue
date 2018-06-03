@@ -35,9 +35,11 @@
                             </td>
                         </template>
                        <template slot="footer">
-                            <td width="60%">
+                            <td width="60%" style="height: 110px;">
                                 <h2 class="body-1">
-                                    Набрано: {{ score(test.blocks) }} из {{ passedScore(test.blocks) }} баллов
+                                    Набрано: {{ score(test.blocks) }} баллов
+                                    <br>
+                                    Минимум: {{ passedScore(test.blocks) }} баллов
                                     <br>
                                     Средний балл: {{ middleScore(test.blocks) }}
                                 </h2>   
@@ -55,9 +57,9 @@
                                   {{ successPrecent(test.blocks) + '%' }}
                                 </v-progress-circular>
                                 <v-btn
-                                    v-if="successPrecent(test.blocks) === 100" 
+                                    v-if="successPrecent(test.blocks) >= 100" 
                                     color="info" 
-                                    v-on:click="loadCertificate(test.name)">
+                                    v-on:click="loadCertificate(test.name, test.blocks[test.blocks.length - 1].date)">
                                     Сертификат
                                 </v-btn>
                             </td>
@@ -129,10 +131,10 @@
             }
         },
         methods:{
-            loadCertificate(name) {
+            loadCertificate(name, date) {
                 this.$store.dispatch('generateCerificate', { 
                     courseName: name, 
-                    date: 'test', 
+                    date, 
                     result: 100 
                 });
             },
@@ -147,13 +149,15 @@
                     .reduce((a,b) => +a+(+b)));
             },
             passedScore(list) {
-                return Math.ceil(list
+                console.log(list
                     .map(i => i.rules.successPrecent)
-                    .reduce((a,b) => +a+(+b)));
+                    .reduce((a,b) => +a+(+b)))
+                return list
+                    .map(i => i.rules.successPrecent)
+                    .reduce((a,b) => +a+(+b));
             },
             successPrecent(list) {
                 return this.score(list) / ((this.passedScore(list) / 100)); 
-
             }
         }
     };

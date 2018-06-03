@@ -11,7 +11,7 @@
                         <p>Миссия Vysotskiy Consulting — распространение профессиональных знаний по эффективной работе в BIM-среде.</p>
                         <p>Помимо основной работы, мы уделяем большое внимание публикации открытой информации по информационному моделированию, доступной для всех посетителей нашего ресурса.</p>
                     </span>
-                      <v-btn large color="primary" class="mx-0">Перейти к видеокурсам</v-btn>
+                    <a href="https://bim.vc/base" target="_blank"><v-btn large color="primary" class="mx-0">Перейти к курсам</v-btn></a>
                     </v-flex>
                   </v-layout>
                 </v-container>
